@@ -4,8 +4,7 @@
 
 An end-to-end personalized product recommendation engine built with collaborative filtering, TF-IDF content similarity, and a hybrid scoring model — deployed on Streamlit.
 
-## 🚀 Live Demo
-👉 [Click here to open the app](https://ishaanagnihotri18-smartcartai-app.streamlit.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B)](https://smartcartai-ygj5mho6yah7k6vx4e2o5z.streamlit.app)
 
 ## ✨ Features
 - Personalized recommendations using Hybrid, CF, and Content-Based algorithms
