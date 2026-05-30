@@ -28,6 +28,8 @@ html, body, [class*="css"] {
     color: #e8e6e0;
 }
 #MainMenu, footer, header { visibility: hidden; }
+button[data-testid="collapsedControl"] { display: none !important; }
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
 .block-container { padding: 0 !important; max-width: 100% !important; }
 section[data-testid="stSidebar"] {
     background: #0d0d14 !important;
