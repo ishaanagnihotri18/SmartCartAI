@@ -234,23 +234,29 @@ def render_sidebar():
     return page
 def render_topnav():
     current = st.session_state.get("current_page","🎯  Recommendations")
+    st.markdown('<div style="padding:12px 32px 16px;display:flex;gap:8px">', unsafe_allow_html=True)
     col1,col2,col3,col4 = st.columns(4)
-    nav_items = [
-        (col1, "🎯 Recommendations", "🎯  Recommendations"),
-        (col2, "🔗 Similar",         "🔗  Similar Products"),
-        (col3, "🔍 Search",          "🔍  Search"),
-        (col4, "📊 Analytics",       "📊  Analytics"),
-    ]
-    st.markdown('<div style="padding:12px 32px 0">', unsafe_allow_html=True)
-    for col, label, key in nav_items:
-        with col:
-            active = current == key
-            if st.button(label, key=f"nav_{label}", type="primary" if active else "secondary"):
-                st.session_state["current_page"] = key
-                st.session_state["view_product"] = None
-                st.rerun()
+    with col1:
+        if st.button("🎯 Recommendations", key="nav_rec", use_container_width=True):
+            st.session_state["current_page"] = "🎯  Recommendations"
+            st.session_state["view_product"] = None
+            st.rerun()
+    with col2:
+        if st.button("🔗 Similar", key="nav_sim", use_container_width=True):
+            st.session_state["current_page"] = "🔗  Similar Products"
+            st.session_state["view_product"] = None
+            st.rerun()
+    with col3:
+        if st.button("🔍 Search", key="nav_srch", use_container_width=True):
+            st.session_state["current_page"] = "🔍  Search"
+            st.session_state["view_product"] = None
+            st.rerun()
+    with col4:
+        if st.button("📊 Analytics", key="nav_ana", use_container_width=True):
+            st.session_state["current_page"] = "📊  Analytics"
+            st.session_state["view_product"] = None
+            st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-
 # ── Page header ────────────────────────────────────────────────────────────────
 def page_header(title, subtitle):
     st.markdown(f"""
