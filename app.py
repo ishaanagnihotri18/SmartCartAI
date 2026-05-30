@@ -32,6 +32,13 @@ html, body, [class*="css"] {
 section[data-testid="stSidebar"] {
     background: #0d0d14 !important;
     border-right: 1px solid #1e1e2e;
+    min-width: 250px !important;
+}
+
+button[data-testid="collapsedControl"] {
+    background: #1D9E75 !important;
+    border-radius: 0 8px 8px 0 !important;
+    color: white !important;
 }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0a0a0f; }
