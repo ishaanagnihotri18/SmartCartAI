@@ -28,18 +28,10 @@ html, body, [class*="css"] {
     color: #e8e6e0;
 }
 #MainMenu, footer, header { visibility: hidden; }
-
 .block-container { padding: 0 !important; max-width: 100% !important; }
 section[data-testid="stSidebar"] {
     background: #0d0d14 !important;
     border-right: 1px solid #1e1e2e;
-    min-width: 250px !important;
-}
-
-button[data-testid="collapsedControl"] {
-    background: #1D9E75 !important;
-    border-radius: 0 8px 8px 0 !important;
-    color: white !important;
 }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0a0a0f; }
@@ -240,7 +232,24 @@ def render_sidebar():
         </div>""", unsafe_allow_html=True)
 
     return page
-
+def render_topnav():
+    current = st.session_state.get("current_page","🎯  Recommendations")
+    col1,col2,col3,col4 = st.columns(4)
+    nav_items = [
+        (col1, "🎯 Recommendations", "🎯  Recommendations"),
+        (col2, "🔗 Similar",         "🔗  Similar Products"),
+        (col3, "🔍 Search",          "🔍  Search"),
+        (col4, "📊 Analytics",       "📊  Analytics"),
+    ]
+    st.markdown('<div style="padding:12px 32px 0">', unsafe_allow_html=True)
+    for col, label, key in nav_items:
+        with col:
+            active = current == key
+            if st.button(label, key=f"nav_{label}", type="primary" if active else "secondary"):
+                st.session_state["current_page"] = key
+                st.session_state["view_product"] = None
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ── Page header ────────────────────────────────────────────────────────────────
 def page_header(title, subtitle):
@@ -254,7 +263,9 @@ def page_header(title, subtitle):
         <div style="height:1px;background:linear-gradient(90deg,#1e1e2e,transparent)"></div>
     </div>
     """, unsafe_allow_html=True)
-
+def page_header(title, subtitle):
+    st.markdown(f"""...""", unsafe_allow_html=True)
+    render_topnav()  # ← add this line
 
 # ── Product card (clickable) ───────────────────────────────────────────────────
 def render_product_card(product, score=None, rank=None, key_prefix="card"):
@@ -264,11 +275,10 @@ def render_product_card(product, score=None, rank=None, key_prefix="card"):
     rank_badge = f'<div style="position:absolute;top:10px;left:10px;width:22px;height:22px;background:#1D9E75;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:\'DM Mono\',monospace;font-size:10px;color:#fff">{rank}</div>' if rank else ''
     score_tag  = f'<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#1D9E75;margin-top:6px">score {score:.3f}</div>' if score else ''
 
-    # HTML card
     st.markdown(f"""
     <div style="position:relative;background:#13131f;border:1px solid #1e1e2e;
                 border-radius:14px;padding:16px;border-top:2px solid {color}30;
-                margin-bottom:4px">
+                cursor:pointer;transition:all 0.2s" id="card-{pid}">
         {rank_badge}
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:{color};
                     letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;
@@ -288,11 +298,14 @@ def render_product_card(product, score=None, rank=None, key_prefix="card"):
             </div>
         </div>
         {score_tag}
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e1e2e;
+                    font-family:'DM Mono',monospace;font-size:10px;color:#444460">
+            click to view details →
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Separate button below card
-    if st.button(f"View Details →", key=f"{key_prefix}_{pid}"):
+    if st.button("View Details", key=f"{key_prefix}_{pid}"):
         st.session_state["view_product"] = int(pid)
         st.rerun()
 
@@ -383,7 +396,18 @@ def page_product_detail(products, tags, cf, cb):
     </div>
     """, unsafe_allow_html=True)
 
-   # Similar products
+    # Similar products section
+    st.markdown("""
+    <div style="margin:24px 0 12px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#444460;
+                    letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">
+            Content-Based Similarity
+        </div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;
+                   color:#e8e6e0;margin:0">Similar Products</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
     similar = cb.get_similar_products(pid, top_n=6)
     if similar:
         cols = st.columns(3)
@@ -391,30 +415,10 @@ def page_product_detail(products, tags, cf, cb):
             p = get_product(spid, products)
             if p is not None:
                 with cols[i % 3]:
-                    st.markdown(f"""
-                    <div style="background:#13131f;border:1px solid #1e1e2e;
-                                border-radius:14px;padding:16px;border-top:2px solid {cat_color(p.get('category_name',''))}30;
-                                margin-bottom:4px">
-                        <div style="font-family:'DM Mono',monospace;font-size:10px;
-                                    color:{cat_color(p.get('category_name',''))};
-                                    text-transform:uppercase;margin-bottom:6px">
-                            {str(p.get('category_name',''))}
-                        </div>
-                        <div style="font-size:13px;font-weight:500;color:#e8e6e0;
-                                    margin-bottom:10px">{str(p.get('name',''))[:45]}</div>
-                        <div style="font-family:'Syne',sans-serif;font-size:20px;
-                                    font-weight:700;color:#1D9E75">
-                            ₹{float(p.get('price',0)):,.0f}
-                        </div>
-                        <div style="font-family:'DM Mono',monospace;font-size:10px;
-                                    color:#1D9E75;margin-top:6px">score {score:.3f}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("View Details →", key=f"sim_{pid}_{int(p['product_id'])}"):
-                        st.session_state["view_product"] = int(p["product_id"])
-                        st.rerun()
+                    render_product_card(p, score, rank=i+1,
+                                        key_prefix=f"sim_{pid}")
 
-    # Frequently bought together
+    # Also bought section
     st.markdown("""
     <div style="margin:32px 0 12px">
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:#444460;
@@ -426,32 +430,19 @@ def page_product_detail(products, tags, cf, cb):
     </div>
     """, unsafe_allow_html=True)
 
-    cf_similar = cf.fallback_popular(top_n=3)
+    cf_similar = cf.get_similar_items(pid, top_n=3) if hasattr(cf, 'get_similar_items') else []
+    if not cf_similar:
+        # fallback: show popular
+        cf_similar = cf.fallback_popular(top_n=3)
+
     cols = st.columns(3)
     for i, (spid, score) in enumerate(cf_similar):
         p = get_product(spid, products)
         if p is not None:
             with cols[i]:
-                st.markdown(f"""
-                <div style="background:#13131f;border:1px solid #1e1e2e;
-                            border-radius:14px;padding:16px;border-top:2px solid {cat_color(p.get('category_name',''))}30;
-                            margin-bottom:4px">
-                    <div style="font-family:'DM Mono',monospace;font-size:10px;
-                                color:{cat_color(p.get('category_name',''))};
-                                text-transform:uppercase;margin-bottom:6px">
-                        {str(p.get('category_name',''))}
-                    </div>
-                    <div style="font-size:13px;font-weight:500;color:#e8e6e0;
-                                margin-bottom:10px">{str(p.get('name',''))[:45]}</div>
-                    <div style="font-family:'Syne',sans-serif;font-size:20px;
-                                font-weight:700;color:#1D9E75">
-                        ₹{float(p.get('price',0)):,.0f}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                if st.button("View Details →", key=f"cf_{pid}_{int(p['product_id'])}"):
-                    st.session_state["view_product"] = int(p["product_id"])
-                    st.rerun()
+                render_product_card(p, score, key_prefix=f"cf_{pid}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ── Recommendations page ───────────────────────────────────────────────────────
